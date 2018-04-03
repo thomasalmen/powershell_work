@@ -1,0 +1,97 @@
+﻿cls
+
+#$klientcertifikatCN="ncsprod-hsaws.orebroll.se"
+$klientcertifikatCN="hsaws.user.katalogtjanst.orebroll.se"
+$certpath = "cert:\CurrentUser\My"
+
+$uri = @(
+"https://hsaws.orebroll.se/hsaws/hsaws/""https://hsaws1.orebroll.se:8443/hsaws/hsaws/"
+"https://hsaws2.orebroll.se:8443/hsaws/hsaws/"
+"https://hsawsnettest.orebroll.se/HsaWs.svc"
+)
+
+try
+{
+    $cert = (dir $certpath -ErrorAction Stop | where {$_.Subject -match "cn=$($klientcertifikatCN)" })
+    if([string]::IsNullOrEmpty($cert))
+    {
+        throw 
+    }
+    
+}
+catch {
+    Write-Output "An error occurred. Check that certificate path '$($certpath)' and certificate CN '$($klientcertifikatCN)' is correct"
+    exit 1
+}
+
+$requestHeaders = @{"SOAPAction" = "urn:riv:hsa:HsaWsResponder:2:ping" ; "MIME-Version" = "1.0"}
+$contenttype="multipart/related; type=`"application/xop+xml`";start=`"<http://tempuri.org/0>`";boundary=`"__abcdefghijklmnopqrstuvxyz1234567890__`";start-info=`"text/xml`""
+$requestBody = @"
+
+--__abcdefghijklmnopqrstuvxyz1234567890__
+Content-ID: <http://tempuri.org/0>
+Content-Transfer-Encoding: 8bit
+Content-Type: application/xop+xml;charset=utf-8;type="text/xml"
+Connection:close
+
+<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Header><h:MessageID xmlns:h="http://www.w3.org/2005/08/addressing" xmlns="http://www.w3.org/2005/08/addressing" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">b6d4cc75-cc36-47c1-8fe1-2797f5a2a4c0</h:MessageID><h:To xmlns:h="http://www.w3.org/2005/08/addressing" xmlns="http://www.w3.org/2005/08/addressing">SE165565594230-1000</h:To></s:Header><s:Body xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><Ping xmlns="urn:riv:hsa:HsaWsResponder:3"/></s:Body></s:Envelope>
+--__abcdefghijklmnopqrstuvxyz1234567890__--
+
+"@
+
+[System.Security.Authentication.SslProtocols]$protocol = "tls"
+
+
+$certCallback = @"
+    using System;
+    using System.Net;
+    using System.Net.Security;
+    using System.Security.Cryptography.X509Certificates;
+    public class ServerCertificateValidationCallback
+    {
+        public static void Ignore()
+        {
+            if(ServicePointManager.ServerCertificateValidationCallback ==null)
+            {
+                ServicePointManager.ServerCertificateValidationCallback += 
+                    delegate
+                    (
+                        Object obj, 
+                        X509Certificate certificate, 
+                        X509Chain chain, 
+                        SslPolicyErrors errors
+                    )
+                    {
+                        return true;
+                    };
+            }
+        }
+    }
+"@
+    Add-Type $certCallback
+ 
+[ServerCertificateValidationCallback]::Ignore()
+
+$Rapport = @()
+$uri | ForEach-Object { 
+    $statusMess = ($statusMess = " " | Select-Object Adress, Svar, Diagnos)  
+    $statusMess.Adress = $_
+    try
+    {
+    
+        $out = Invoke-WebRequest $_ -Method post -ContentType $contenttype -Body $requestBody -Headers $requestHeaders -Certificate $cert -DisableKeepAlive   -ErrorAction stop
+        if(($out.RawContent.Length -gt 0) -and ($out.RawContent -ne "" )){
+            $start = $out.RawContent.IndexOf("<message>")+9
+            $slut = $out.RawContent.IndexOf("</message>")
+            $statusmess.Svar = $out.RawContent.Substring($start,($slut-$start))
+            $statusmess.Diagnos = "OK!"
+        }
+    }
+    catch { 
+        $statusmess.Svar = "N/A"
+        $statusmess.Diagnos = "FAIL!"
+    }
+       $Rapport+=$statusmess
+}
+
+$Rapport 
