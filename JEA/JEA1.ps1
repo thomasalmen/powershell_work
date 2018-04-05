@@ -1,6 +1,6 @@
 ﻿# Set Up Maintenance Role Capability File
 # Run the following commands to create the demo “role capability” file we will be using for the next section.  Later in this guide, you will learn about what this file does.
-$powerShellPath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0" 
+#$powerShellPath = "$env:SystemRoot\System32\WindowsPowerShell\v1.0" 
 
 # Create some directorys the demo module, which will contain the demo Role Capability File
 New-Item -Path “$env:ProgramFiles\WindowsPowerShell\Modules\DemoModule2” -ItemType Directory -Force
@@ -37,7 +37,7 @@ New-PSRoleCapabilityFile -Path “$env:ProgramFiles\WindowsPowerShell\Modules\De
 #Replace with your non-admin group name
 $NonAdministrator = "orebroll\tal008"
 
-$JEAConfigParams = @{
+$PSSessionParams = @{
         SessionType= "RestrictedRemoteServer" 
         RunAsVirtualAccount = $true
         #Testkommentar
@@ -65,7 +65,7 @@ if(Get-PSSessionConfiguration -Name $sessionName -ErrorAction SilentlyContinue)
     Unregister-PSSessionConfiguration -Name $sessionName -ErrorAction Stop
 }
 
-New-PSSessionConfigurationFile -Path "$env:ProgramData\JEAConfiguration\JEADemo.pssc" @JEAConfigParams
+New-PSSessionConfigurationFile -Path "$env:ProgramData\JEAConfiguration\JEADemo.pssc" @PSSessionParams
 #endregion
 
 #region Register the session configuration
