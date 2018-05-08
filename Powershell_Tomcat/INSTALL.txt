@@ -1,0 +1,126 @@
+Java och Tomcat installeras som standalone enligt instruktionerna nedan.
+Detta är viktigt då det annars inte går enkelt att ändra Java eller Tomcatversioner.
+
+Java och Tomcat går att tanka ner och installera med installer eller som standalone.
+Vanligtvis får man då en .zip-fil istället som då kan zippas upp enl nedan.
+
+Har du redan en fungerande standalone-installation som är uppsatt enl nedan så kan du kopiera den till en annan server.
+Därefter installera servicen.
+
+
+1. Skapa root-mappen för websajten på servern
+	Ex: D:\websites\katalogadmin.orebroll.se
+
+2. Installera Java i en undermapp till nyligen skapad mapp.
+	Via installern görs det genom att välja alternativet att installera i annan mapp under installationen.
+	Om du har en .zip.-fil med java så zippas den istället upp i mappen nedan.
+	Ex: D:\websites\katalogadmin.orebroll.se\jre1.8.0_151
+	
+	Efter detta steg är javainstallationen klar.
+
+3. Installera Tomcat.
+	Via installern är det viktigt att välja att installera i root-mappen.
+	En .zip-fil zippas istället upp i mappen.
+	Ex: D:\websites\katalogadmin.orebroll.se\tomcat-x.y.z
+	
+3. Katalogstrukturen ska nu se ut så här:
+
+	d:\
+	- \websites
+		- \Katalogadmin.orebroll.se
+			- \jre1.8.0_151
+			- \tomcat-x.y.z
+			
+			
+4. Installera tomcat som service.
+	I mappen \tomcat-x.y.z\bin finns filerna som hanterar b.la start och stop.
+	
+	- Skapa filen setenv.bat (windows) el setenv.sh (linux)
+	- Skriv in sökvägen till java enl nedan och spara filen.
+		rem Start på setenv.bat
+		set "JRE_HOME=D:\websites\katalogadmin.orebroll.se\jre1.8.0_151"
+		exit /b 0
+		rem Slut på setenv.bat
+	- Det går att skriva in andra parametrar i setenv.bat/.sh men det får du googla på vid behov..
+
+	Starta därefter powershell-ISE i tomcats binmapp och kör kommandona nedan.
+	Du ändrar givetvis sökvägarna nedan vid behov.
+
+## START POWERSHELLSCRIPT - kopiera härifrån
+
+#Set-ExecutionPolicy Unrestricted
+# Version på tomcats installation
+$TomcatVersion = "9.0.4"
+
+#Sökväg till tomcats exe-fil
+$PathToTomcatExe = "$($Catalina_Home)\bin\tomcat9.exe"
+
+#Namn på tjänsten
+$ServiceName = "Katalogadmin" # Måste vara unikt.
+
+#Sökväg till tomcats installationsmapp
+$Catalina_Home = "D:\websites\katalogadmin.orebroll.se\apache-tomcat-9.0.4"
+
+#Sökväg till java
+$Java_home = "D:\websites\katalogadmin.orebroll.se\jre1.8.0_151"
+
+#Sökväg till java jvm.dll
+$jvm = "$($java_home)\bin\server"
+
+# Kan lämnas tom om du inte explicit vill sätta denna.
+$Catalina_Base = ""
+
+#Inget nedanför detta behöver ändras.
+####################################
+
+if($Catalina_Base -eq "" ) {$Catalina_base = $Catalina_Home}
+$params = @"
+	--Description "Apache Tomcat $($TomcatVersion) Server - http://tomcat.apache.org/"
+	--JavaHome "$Java_home"
+	--DisplayName "Apache Tomcat $($TomcatVersion) - $($ServiceName)"
+	--Install "$PathToTomcatExe"
+	--LogPath "$($catalina_base)\logs"
+	--Classpath "$($catalina_home)\bin\bootstrap.jar;$($catalina_home)\bin\tomcat-juli.jar"
+	--Jvm "$($jvm)\jvm.dll"
+	--StartMode "jvm"
+	--StopMode "jvm"
+	--StartPath "$Catalina_Home"
+	--StopPath "$Catalina_Home"
+	--StartClass "org.apache.catalina.startup.Bootstrap"
+	--StopClass "org.apache.catalina.startup.Bootstrap"
+	--StartParams "start"
+	--StopParams "stop"
+	--JvmOptions "-Dcatalina.home=$Catalina_Home;-Dcatalina.base=$catalina_Base;-Dignore.endorsed.dirs;-Djava.io.tmpdir=$Catalina_Base\temp;-Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager;-Djava.util.logging.config.file=$Catalina_Base\conf\logging.properties" 
+	--JvmOptions9 "--add-opens=java.base/java.lang=ALL-UNNAMED#--add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED"
+	--Startup "Manual"
+	--JvmMs "128"
+	--JvmMx "256"
+"@
+$params= $params.replace("`r`n","")
+Start-Process -FilePath "$PathToTomcatExe" -ArgumentList "//IS//$($ServiceName) $($params)" -NoNewWindow
+
+if(Get-service -Name $ServiceName)
+{
+	Set-Service -Name $ServiceName -StartupType Automatic   
+	Start-Service $ServiceName
+	Rename-Item -Path "$($Catalina_Home)\bin\tomcat9w.exe" -NewName "$($ServiceName).exe" |Out-Null
+}
+##SLUT POWERSHELLSCRIPT -- kopiera hit
+	
+	
+	Det går också att installera/avinstallera tjänsten med: service.bat install <servicenamn> eller service.bat remove <servicenamn>
+	Dock kräver detta att javas miljövariabler är satta och förhindrar då att man kör standalone-instanser med olika versioner av java.
+	Använd därför scriptet ovan i första hand.
+
+	
+5. Installationen av tomcat och java är nu klar.
+	Tomcat är nu installerad som service och kan hanteras via mmc eller powershell.
+	Har du inte gjort några förändringar i tomcaten så svarar den nu på port 8080.
+	Glöm i så fall inte att öppna brandväggen och tillåt inkommande trafik på port 8080 
+	
+6. Vidare konfiguration av tomcat:
+	Rigga server.xml gällande cert, portar osv.
+	Kopiera in kod under webapps
+	
+
+	
