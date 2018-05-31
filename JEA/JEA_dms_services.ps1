@@ -1,17 +1,18 @@
-## S‰tter upp JEA fˆr MT  sÂ de kan starta om Tj‰nst
-if($PSVersionTable.PSVersion.Major -lt 5 ){Write-host "Detta script kr‰ver Powershell version 5 eller senare!" -ForegroundColor Red ;break}
+Ôªø
+## S√§tter upp JEA f√∂r MT  s√• de kan starta om Tj√§nst
+    
 
 # Determine domain
 # $domain = (Get-CimInstance -ClassName Win32_ComputerSystem).Domain
 
-# Namnet pÂ endpointen "Session name"
-$sessionName = "MT_ServiceRestart"
+# Namnet p√• endpointen "Session name"
+$sessionName = "dms_services"
 
-#Namn pÂ tj‰nst(-erna) som ska tillÂta att starta/stoppas
-[string[]]$servicename = "spooler","befregserv"
+#Namn p√• tj√§nst(-erna) som ska till√•ta att starta/stoppas
+[string[]]$servicename = "is_DMS_Orders","is_DMS_Results"
 
-#Namn pÂ PS-modulen
-$modulename = "MT_ServiceRestart"
+#Namn p√• PS-modulen
+$modulename = "dms_ServiceRestart"
 
 # Removes existing sessionconfiguration with the same name as $sessionName
 if(Get-PSSessionConfiguration -Name $sessionName -ErrorAction SilentlyContinue)
@@ -20,18 +21,18 @@ if(Get-PSSessionConfiguration -Name $sessionName -ErrorAction SilentlyContinue)
 }
 
 # Create directory for the module, which will contain the demo Role Capability File
-New-Item -Path ì$env:ProgramFiles\WindowsPowerShell\Modules\$modulenameî -ItemType Directory -Force
+New-Item -Path ‚Äú$env:ProgramFiles\WindowsPowerShell\Modules\$modulename‚Äù -ItemType Directory -Force
 
 # Create a empty module manifest
-New-ModuleManifest -Path ì$env:ProgramFiles\WindowsPowerShell\Modules\$modulename\$modulename.psd1" -Author "tal008 - the great"
+New-ModuleManifest -Path ‚Äú$env:ProgramFiles\WindowsPowerShell\Modules\$modulename\$modulename.psd1" -Author "tal008 - the great"
 
-# Create the ìrole capabilityî file we will be using for the next section.
-New-Item -Path ì$env:ProgramFiles\WindowsPowerShell\Modules\$modulename\RoleCapabilitiesî -ItemType Directory  -Force
+# Create the ‚Äúrole capability‚Äù file we will be using for the next section.
+New-Item -Path ‚Äú$env:ProgramFiles\WindowsPowerShell\Modules\$modulename\RoleCapabilities‚Äù -ItemType Directory  -Force
 
 # Create the transcript directory
-if(-not (Test-Path ì$env:ProgramFiles\WindowsPowerShell\Modules\$modulename\Transcripts" ))
+if(-not (Test-Path ‚Äú$env:ProgramFiles\WindowsPowerShell\Modules\$modulename\Transcripts" ))
 {
-    New-Item -Path ì$env:ProgramFiles\WindowsPowerShell\Modules\$modulename\Transcriptsî -ItemType Directory -Force
+    New-Item -Path ‚Äú$env:ProgramFiles\WindowsPowerShell\Modules\$modulename\Transcripts‚Äù -ItemType Directory -Force
 }
 
 # Parameters for the role capability
@@ -41,24 +42,19 @@ $RoleCapabilityParams = @{
     
     VisibleCmdlets = 
     @{ Name = 'Get-Service'; Parameters = @{ Name = 'Name'; ValidateSet = $servicename }}, 
-    @{ Name = 'restart-Service'; Parameters = @{ Name = 'Name'; ValidateSet = $servicename }}, 
-    @{ Name = 'stop-Service'; Parameters = @{ Name = 'Name'; ValidateSet = $servicename }}, 
-    @{ Name = ëstart-Service'; Parameters = @{ Name = 'Name'; ValidateSet = $servicename }}
+    @{ Name = 'Restart-Service'; Parameters = @{ Name = 'Name'; ValidateSet = $servicename }}, 
+    @{ Name = 'Stop-Service'; Parameters = @{ Name = 'Name'; ValidateSet = $servicename }}, 
+    @{ Name = ‚ÄòStart-Service'; Parameters = @{ Name = 'Name'; ValidateSet = $servicename }}
+    CompanyName="Region √ñrebro L√§n"
 
-    #VisibleExternalCommands = "C:\Windows\system32\ipconfig.exe"
-    CompanyName="OLL"
-    #FunctionDefinitions = @{ Name = 'Get-UserInfo'; ScriptBlock = {$PSSenderInfo}}
 }
 
-# Create the Role Capability file  - Filen mÂste heta likadant som sessionsnamnet
+# Create the Role Capability file  - Filen m√•ste heta likadant som sessionsnamnet
 New-PSRoleCapabilityFile -Path "$env:ProgramFiles\WindowsPowerShell\Modules\$modulename\RoleCapabilities\$sessionName.psrc" @RoleCapabilityParams
 
 # Create and Register Session Configuration File
 $SessionConfigParams = @{
-        #SessionType = "RestrictedRemoteServer"
         RunAsVirtualAccount = $true
-        #Testkommentar
-        #Languagemode = "RestrictedLanguage"
         RoleDefinitions = @{ 
             'orebroll\mca034' = @{ RoleCapabilities = $sessionName}
             'orebroll\ean058' = @{ RoleCapabilities = $sessionName}
@@ -67,13 +63,9 @@ $SessionConfigParams = @{
             'orebroll\tal008' = @{ RoleCapabilities = $sessionName}
         }
         
-        TranscriptDirectory = "$env:ProgramFiles\WindowsPowerShell\Modules\$modulename\Transcriptsî
+        TranscriptDirectory = "$env:ProgramFiles\WindowsPowerShell\Modules\$modulename\Transcripts‚Äù
         }
      
-
-
-
-
 if(-not (Test-Path "$env:ProgramFiles\WindowsPowerShell\Modules\$modulename\SessionConfiguration" ))
 {
     New-Item -Path "$env:ProgramFiles\WindowsPowerShell\Modules\$modulename\SessionConfiguration" -ItemType Directory -Force
