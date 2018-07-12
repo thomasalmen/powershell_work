@@ -106,7 +106,7 @@
 
 }
 
-Set-LocalLCMProperties -computername "kraschobang" ,web01a,web01b -verbose
+Set-LocalLCMProperties -computername kraschobang -verbose
 
 # OM det inte funkar...
 #

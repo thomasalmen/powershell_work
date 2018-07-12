@@ -1,5 +1,8 @@
-﻿function Set-LocalLCMProperties
+﻿
+
+function Get-LocalLCMProperties
 {
+
     [cmdletbinding()]
     param(
         [parameter(mandatory=$true)]
@@ -7,6 +10,117 @@
         #[pscredential]$credz=(Get-Credential tal008adm)
     )
 
+    Begin
+    {
+        Write-Verbose "[ BEGIN ] Startar function $($MyInvocation.Mycommand)"  
+    }
+    Process
+    {
+        $WantedLCMConfig=[ordered]@{
+            ActionAfterReboot = "ContinueConfigurationx"
+            ConfigurationMode = "ApplyAndAutoCorrecty"
+            RebootNodeIfNeeded = $false
+            LCMState = "Idle"
+        }
+        
+
+    
+
+    #Initerar tom array för att förvara varje pscustomobject i foreachloopen
+    $rapport=@()
+    foreach($c in $computername)
+    {
+    $entry = ($entry = " " | select-object HostName, OS, WantedConfig, RemoteConfig) 
+    $entry.Hostname = "$c"
+    $entry.WantedConfig = $WantedLCMConfig.GetEnumerator()
+        try
+        {
+            $cimsession = (New-CimSession -ComputerName $c -Credential $credz -ErrorAction Stop)
+
+            #TODO: Fixa till denna. Kräver en pssession och inte en cimsession.
+            #invoke-command -session $psession { Set-Item -Path WSMan:\localhost\MaxEnvelopeSizeKb -Value 2048 } | out-null
+        
+            try
+            {
+                
+                $RemoteLCMConfig = Get-DscLocalConfigurationManager -CimSession $cimsession -ErrorAction Stop | select $ExpectedLCMConfig.foreach({ $_.keys })
+                $entry.RemoteConfig = $RemoteLCMConfig
+                $entry.os = Get-CimInstance Win32_OperatingSystem -CimSession $cimsession | Select-Object Caption
+                #$entry.OS = $entry.OS.Replace("  "," ")
+                #$entry.OS = $entry.OS.Replace("<%-accuracy>","") #Sometimes no osmatch.
+			    #$entry.OS = $entry.OS.Trim()
+
+                #Make a temp variable of $RemoteLCMConfig which now contains a cim-instance objekt and convert it into a hashtable
+                $RemoteLCMConfigTemp=[ordered]@{}
+                
+                #https://stackoverflow.com/questions/27642169/looping-through-each-noteproperty-in-a-custom-object
+                $RemoteLCMConfig.PSObject.Properties | % {
+                    $RemoteLCMConfigTemp.Add( $($_.name) , $($_.value) )
+                }
+
+                # Puts the result back in $RemoteLCMConfig so we can continue using it.
+                $RemoteLCMConfig = $RemoteLCMConfigTemp
+
+                #Now, lets compare some stuff in the two hashtables
+                $RemoteLCMConfig.GetEnumerator() | % { 
+                
+                    $compareKey = $_.key
+                    $compareValue = $_.value
+                    #Om en eller flera värden inte matchar mellan önskad och remote config så flaggar vi fel.
+                    if( ! ( $compareValue -eq $WantedLCMConfig[$compareKey] ) )
+                    {
+                        #$mismatch += "$compareValue och $($ExpectedLCMConfig[$compareKey]) matchade inte"
+                        #Write-Verbose "$compareValue och $($ExpectedLCMConfig[$compareKey]) matchade inte"
+                        #$mismatch += [PSCustomObject]@{
+                        #    Wanted = "$compareValue"
+                        #    Remote = "$($ExpectedLCMConfig[$compareKey])"
+                        #}
+                            #$result.Add( @{Wanted= $($ExpectedLCMConfig[$compareKey])} ; @{ Received = $($compareValue) })
+                        #}
+                        $entry.mismatch += @( @{ Miss= "$compareValue och $($WantedLCMConfig[$compareKey]) matchade inte" } )
+                    }
+                    #$mismatch
+                    #$action += $mismatch
+
+                } 
+            }
+            catch
+            {
+                $result = "$($_.Exception.Message)"
+                Write-verbose $result
+            }
+        }
+        catch
+        {
+            $result="Could not connect to '$c'"
+            #Write-verbose $result
+            
+        } 
+
+        $rapport+=$entry
+    }
+    }
+    End
+    {
+    #$entry
+        $rapport #out | ft -AutoSize
+        Write-Verbose "[  END  ] Ending: $($MyInvocation.Mycommand)"
+    }
+}
+
+
+
+function Set-LocalLCMProperties
+{
+
+    [cmdletbinding()]
+    param(
+        [parameter(mandatory=$true)]
+        [string[]]$computername #,
+        #[pscredential]$credz=(Get-Credential tal008adm)
+    )
+"oops.."
+break
     Begin
     {
         if($PSVersionTable.PSVersion.Major -lt 5 ){Write-host "Detta script kräver Powershell version 5 eller senare!" -ForegroundColor Red ;break}
@@ -125,17 +239,15 @@
             }
             catch
             {
-                $result = "[Error] $($_.Exception.Message)"
+                $result = "$($_.Exception.Message)"
             }
 
         }
         catch
         {
-            $result="[Fail] could not connect to '$c'"
+            $result="Could not connect to '$c'"
             Write-verbose $result
         } 
-        
-
         
         $rapport+=[PSCustomObject]@{
             Name     = $cimsession.ComputerName
@@ -161,7 +273,8 @@
 
 }
 
-Set-LocalLCMProperties -computername webutv02 ,webtest03 -verbose #,kraschobang,web01a,web01b -verbose # ,web01a,web01b -verbose
+Get-LocalLCMProperties -computername kraschobang,webtest03,webtest02,webint05 -verbose #,kraschobang,web01a,web01b -verbose # ,web01a,web01b -verbose
+#Set-LocalLCMProperties -computername webutv02 ,webtest03 -verbose #,kraschobang,web01a,web01b -verbose # ,web01a,web01b -verbose
 
 # OM det inte funkar...
 #

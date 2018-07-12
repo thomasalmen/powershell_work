@@ -1,4 +1,8 @@
-﻿#Snodda rader för att kolla om user är administrator
+﻿
+#Observera att denna inte är klar.
+#TODO: Exportera nyckel + pinkod för pkcs12.
+
+#Snodda rader för att kolla om user är administrator
 if (-NOT([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
     #Write-error "Du måste vara administratör för att exekvera detta script!"
     Throw "Du måste vara administratör för att exekvera detta script!"
@@ -11,7 +15,7 @@ $noNeedToCchangeTheseParameters = 'O=RegionService IT,OU=Region Orebro Lan,L=Ore
 function new-csr {
 
     param (
-    [CmdletBindings()]
+    [CmdletBinding()]
         [Parameter(Mandatory = $false)]
         [string]$CN,
 
@@ -24,7 +28,8 @@ function new-csr {
         #[switch]$VerifyWithOpenssl=$false,
 
         [Parameter(Mandatory=$False,ValueFromPipelineByPropertyName=$True)]
-        [string]$CAName="CA2.orebroll.se\Orebroll CA2"
+        [string]$CAName="CA4.orebroll.se\Orebroll CA4"
+        #[string]$CAName="CA2.orebroll.se\Orebroll CA2"
 
     )
 
@@ -231,7 +236,7 @@ function send-requestToCA()
 		Write-verbose "request was successful. Result was saved to $CN.cer"
     }
 
-    break
+    
 write-verbose "retreive and install the certifice"
 		$x=Invoke-Expression -Command "certreq -accept `"$($outdir)\$($CN).cer`" " | Out-Null
 
@@ -255,7 +260,7 @@ write-verbose "retreive and install the certifice"
 		#{
 		#    Write-Debug "export parameter is set. => export certificate"
 		    Write-Verbose "exporting certificate and private key"
-		    $cert = Get-Childitem "cert:\LocalMachine\My" | where-object {$_.Thumbprint -eq (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2((Get-Item "$CN.cer").FullName,"")).Thumbprint}
+		    $cert = Get-Childitem "cert:\LocalMachine\My" | where-object {$_.Thumbprint -eq (New-Object System.Security.Cryptography.X509Certificates.X509Certificate2((Get-Item "$($outdir)\$($CN).cer").FullName,"")).Thumbprint}
 		    Write-verbose "Certificate found in computerstore: $cert"
 
 		    #create a pfx export as a byte array

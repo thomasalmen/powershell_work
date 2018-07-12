@@ -1,6 +1,7 @@
 ﻿
-## Sätter upp JEA för MT  så de kan starta om Tjänst
-    
+#Namn på tjänst(-erna) = "Endpointen" som ska tillåta att starta/stoppas
+[string[]]$servicename = "is_DMS_Orders","is_DMS_Results"
+
 
 # Determine domain
 # $domain = (Get-CimInstance -ClassName Win32_ComputerSystem).Domain
@@ -8,8 +9,6 @@
 # Namnet på endpointen "Session name"
 $sessionName = "dms_services"
 
-#Namn på tjänst(-erna) som ska tillåta att starta/stoppas
-[string[]]$servicename = "is_DMS_Orders","is_DMS_Results"
 
 #Namn på PS-modulen
 $modulename = "dms_ServiceRestart"
