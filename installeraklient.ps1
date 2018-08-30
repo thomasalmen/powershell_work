@@ -60,43 +60,38 @@ break
 <# Slut WSL #>
 
 <# RSAT #>
-# Dubbelkolla att detta är w2016-varianten.
-"Installerar RSAT"
-    $status = Get-WindowsOptionalFeature -Online -FeatureName RSATClient
-    if($status.State -eq "Enabled")
-    {
-        return "RSAT redan enablat..avbryter"
-    }
 
-    #https://blogs.technet.microsoft.com/drew/2016/12/23/installing-remote-server-admin-tools-rsat-via-powershell/
-    $web = Invoke-WebRequest https://www.microsoft.com/en-us/download/confirmation.aspx?id=45520
-    $MachineOS= (Get-WmiObject Win32_OperatingSystem).Name
+	#Requires -RunAsAdministrator
 
-    #Check for Windows Server 2012 R2
-    IF($MachineOS -like "*Microsoft Windows Server*") {
-        Add-WindowsFeature RSAT-AD-PowerShell
-        Break
-    }
+	$web = Invoke-WebRequest https://www.microsoft.com/en-us/download/confirmation.aspx?id=45520
 
-    IF ($ENV:PROCESSOR_ARCHITECTURE -eq "AMD64"){
-            Write-host "x64 Detected" -foregroundcolor yellow
-            $Link=(($web.AllElements |where class -eq "multifile-failover-url").innerhtml[0].split(" ")|select-string href).tostring().replace("href=","").trim('"')
-        }ELSE{
-            Write-host "x86 Detected" -forgroundcolor yellow
-            $Link=(($web.AllElements |where class -eq "multifile-failover-url").innerhtml[1].split(" ")|select-string href).tostring().replace("href=","").trim('"')
-    }
+	$MachineOS= (Get-WmiObject Win32_OperatingSystem).Name
 
-    $DLPath= ($ENV:userprofile) + "\Downloads\" + ($link.split("/")[8])
+	#Check for Windows Server 2012 R2
+	IF($MachineOS -like "*Microsoft Windows Server*")
+	{
+	    Add-WindowsFeature RSAT-AD-PowerShell
+	    Break
+	}
+	IF ($ENV:PROCESSOR_ARCHITECTURE -eq "AMD64"){
+	    Write-host "x64 Detected" -foregroundcolor yellow
+	    $Link=(($web.AllElements |where class -eq "multifile-failover-url").innerhtml[0].split(" ")|select-string href).tostring().replace("href=","").trim('"')
+	    }ELSE{
+	    Write-host "x86 Detected" -forgroundcolor yellow
+	    $Link=(($web.AllElements |where class -eq "multifile-failover-url").innerhtml[1].split(" ")|select-string href).tostring().replace("href=","").trim('"')
+	}
 
-    Write-Host "Downloading RSAT MSU file" -foregroundcolor yellow
-    Start-BitsTransfer -Source $Link -Destination $DLPath
+	$DLPath= ($ENV:USERPROFILE) + "\Downloads\" + ($link.split("/")[8])
 
-    $Authenticatefile=Get-AuthenticodeSignature $DLPath
+	Write-Host "Downloading RSAT MSU file" -foregroundcolor yellow
+	Start-BitsTransfer -Source $Link -Destination $DLPath
 
-    $WusaArguments = $DLPath # + " /quiet" <--quiet kräver inga åtgärder av user + startar om datorn utan frågor
-    if($Authenticatefile.status -ne "valid") {write-host "Can't confirm download, exiting";break}
-    Write-host "Installing RSAT for Windows 10 - please wait" -foregroundcolor yellow
-    Start-Process -FilePath "C:\Windows\System32\wusa.exe" -ArgumentList $WusaArguments -Wait
+	$Authenticatefile=Get-AuthenticodeSignature $DLPath
+	
+	$WusaArguments = $DLPath + " /quiet"
+	if($Authenticatefile.status -ne "valid") {write-host "Can't confirm download, exiting";break}
+	Write-host "Installing RSAT for Windows 10 - please wait" -foregroundcolor yellow
+	Start-Process -FilePath "C:\Windows\System32\wusa.exe" -ArgumentList $WusaArguments -Wait
 
 <# Slut RSAT #>
 
