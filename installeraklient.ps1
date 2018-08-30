@@ -1,6 +1,5 @@
-﻿#hyper-v
+# Manuellt fix
 # chrome + IE inkognito
-# startsida intra
 # animeringsgrejjer GUI - computer
 # F5 editor
 # vscode
@@ -225,6 +224,7 @@ break
 <# Slut hyper-v #>
 
 <# show "Run as user"#>
+"Visa show `"Run as user`""
 # https://superuser.com/questions/1045158/how-do-you-run-as-a-different-user-from-the-start-menu-in-windows-10
 Set-ItemProperty -Path "HKLM:\SOFTWARE\Policies\Microsoft\Windows\Explorer" -Name ShowRunasDifferentuserinStart -Value 1 -type DWORD
 Stop-Process -processname explorer
