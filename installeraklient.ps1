@@ -40,24 +40,25 @@ break
 
 
 
-<# WSL #>
-    "Installerar WSL..."
-    #Disable-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online
-    $status = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
-    if($status.State -eq "Enabled")
-    {
-        return "WSL redan enablat..avbryter"
-    }
-    #https://docs.microsoft.com/en-us/windows/uwp/get-started/enable-your-device-for-development
-    New-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock -Name AllowDevelopmentWithoutDevLicense -PropertyType DWord -Value 1 -Force
-    Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -NoRestart
+<# WSL #> 
+	"Installerar WSL..." 
+	#Disable-WindowsOptionalFeature -FeatureName Microsoft-Windows-Subsystem-Linux -Online 
+	$status = Get-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux 
+	if($status.State -eq "Enabled") 
+	{ 
+		return "WSL redan enablat..avbryter" 
+	} 
+	#https://docs.microsoft.com/en-us/windows/uwp/get-started/enable-your-device-for-development 
+	New-ItemProperty -Path HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock -Name AllowDevelopmentWithoutDevLicense -PropertyType DWord -Value 1 -Force 
+	Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux -NoRestart 
 
-    Start-Process -FilePath C:\Windows\System32\cmd.exe -ArgumentList "/c `"lxrun /install /y`"" -NoNewWindow -Wait
-    ## initially set default user as root
-    Start-Process -FilePath C:\Windows\System32\cmd.exe -ArgumentList "/c `"lxrun /setdefaultuser root /y`"" -NoNewWindow -Wait
-    # Launch Windows Store för andra distar (disablat inom oll)
-    # Start-Process -FilePath "ms-windows-store://collection/?CollectionId=LinuxDistros"
-<# Slut WSL #>
+	# Efter omboot måste följande köras för att konfa WSL
+	# Start-Process -FilePath C:\Windows\System32\cmd.exe -ArgumentList "/c `"lxrun /install /y`"" -NoNewWindow -Wait 
+	## initially set default user as root 
+	# Start-Process -FilePath C:\Windows\System32\cmd.exe -ArgumentList "/c `"lxrun /setdefaultuser root /y`"" -NoNewWindow -Wait 
+	# Launch Windows Store för andra distar  (kan vara disablat)
+	# Start-Process -FilePath "ms-windows-store://collection/?CollectionId=LinuxDistros" 
+<# Slut WSL #> 
 
 <# RSAT #>
 
