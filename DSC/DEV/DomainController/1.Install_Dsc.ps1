@@ -1,6 +1,57 @@
-﻿# DSC Configuration Script (HADC.ps1)
-# Install and configure Highly Available Domain Controllers in a new forest.
-Configuration HADC
+﻿<#
+
+#Om servern inte har internet (ex hyper-v internal) så måste modulen sparas lokalt och sen kopieras till servern.
+$requiredDSCModules=@("xActiveDirectory","NuGet")
+
+$requiredDSCModules.foreach({
+    #Find-Module $_ | 
+    Save-Module $_ -Path $env:temp\$_ -Force -Verbose
+})
+$creds = get-credential administrator
+"DC" | % {
+    $tempsess = new-pssession $_ -Credential $creds
+    $requiredDSCModules.ForEach({
+       Copy-Item $env:temp\$_\$_ -ToSession $tempsess  -Destination "C:\Program Files\WindowsPowerShell\Modules" -Recurse -Force -Verbose
+       Invoke-Command -Session $tempsess { Install-Module $using:_ -Force -verbose }
+    })
+}
+#>
+# Om allt misslyckas så går det att avinstallera DCn: Uninstall-ADDSDomainController -IgnoreLastDCInDomainMismatch -Force -IgnoreLastDnsServerForZone -RemoveApplicationPartitions
+
+# Configuration data file (ConfigurationData.psd1).
+
+$configurationdata=@{
+    AllNodes = 
+    @(
+        @{
+            # NodeName "*" = apply this properties to all nodes that are members of AllNodes array.
+            Nodename = "*"
+
+            # Name of the remote domain. If no parent name is specified, this is the fully qualified domain name for the first domain in the forest.
+            DomainName = "supercow.se"
+
+            # Maximum number of retries to check for the domain's existence.
+            RetryCount = 20
+
+            # Interval to check for the domain's existence.
+            RetryIntervalSec = 30
+
+            # The path to the .cer file containing the public key of the Encryption Certificate used to encrypt credentials for this node.
+            CertificateFile = "$env:TEMP\DscPublicKey.cer"
+
+            # The thumbprint of the Encryption Certificate used to decrypt the credentials on target node.
+            Thumbprint = "A6C4D4CB47D7430FDC01F262A995F8FDA76E0D4B"
+        },
+
+        @{
+            Nodename = "DC"
+            Role = "DC01"
+        }
+    )
+}
+
+
+Configuration SkapaDC
 {
     param
     (
@@ -23,7 +74,9 @@ Configuration HADC
         LocalConfigurationManager
         {
             # Går att ha satt till $true men enbart för testmiljö
-            RebootNodeIfNeeded = $false
+            RebootNodeIfNeeded = $true
+            ActionAfterReboot = 'ContinueConfiguration'
+            ConfigurationMode = 'ApplyAndAutoCorrect'
             # The thumbprint of a certificate used to secure credentials passed in a configuration.
             CertificateId = $node.Thumbprint
         }
@@ -31,7 +84,7 @@ Configuration HADC
         # Install Windows Feature "Active Directory Domain Services".
         WindowsFeature ADDSInstall
         {
-            Ensure = "present"
+            Ensure = "Present"
             Name   = "AD-Domain-Services"
         }
         WindowsFeature InstallTools
@@ -79,65 +132,32 @@ Configuration HADC
             ForestFQDN                        = $Node.DomainName
             DependsOn                         = "[xWaitForADDomain]DomainWait"
         }
-
+        
         # Create AD User "Test.User".
         xADUser ADUser
         {
             DomainName                    = $Node.DomainName
-            DomainAdministratorCredential = $DomainAdministratorCred
             UserName                      = "Test.User"
+            Ensure = 'Present'
             Password                      = $ADUserCred
-            Ensure                        = "present"
-            DependsOn                     = "[xWaitForADDomain]DomainWait"
-        }
-    }
-
-    Node $AllNodes.Where{$_.Role -eq "DC02"}.Nodename
-    {
-        # Configure LCM to allow Windows to automatically reboot if needed. Note: NOT recommended for production!
-        LocalConfigurationManager
-        {
-		    # Set this to $true to automatically reboot the node after a configuration that requires reboot is applied. Otherwise, you will have to manually reboot the node for any configuration that requires it. The default (recommended for PRODUCTION servers) value is $false.
-            RebootNodeIfNeeded = $false
-		    # The thumbprint of a certificate used to secure credentials passed in a configuration.
-            CertificateId = $node.Thumbprint
-        }
-
-        # Install Windows Feature AD Domain Services.
-        WindowsFeature ADDSInstall
-        {
-            Ensure = "Present"
-            Name   = "AD-Domain-Services"
-        }
-
-        # Ensure that the Active Directory Domain Services feature is installed.
-        xWaitForADDomain DomainWait
-        {
-            DomainName           = $Node.DomainName
-            DomainUserCredential = $DomainAdministratorCred
-            RetryCount           = $Node.RetryCount
-            RetryIntervalSec     = $Node.RetryIntervalSec
-            DependsOn            = "[WindowsFeature]ADDSInstall"
-        }
-
-        # Ensure that the AD Domain is present before the second domain controller is added.
-        xADDomainController SecondDC
-        {
-            DomainName                    = $Node.DomainName
-            DomainAdministratorCredential = $DomainAdministratorCred
-            SafemodeAdministratorPassword = $SafemodeAdministratorCred
-            DependsOn                     = "[xWaitForADDomain]DomainWait"
+            #DomainAdministratorCredential = $DomainAdministratorCred
+            #DependsOn                     = "[xWaitForADDomain]DomainWait"
         }
     }
 }
 
 #Testlösen: ABC.123/abc.123
-HADC -ConfigurationData .\ConfigurationData.psd1 `
-    -SafemodeAdministratorCred (Get-Credential -UserName Administrator -Message "Enter Domain Safe Mode Administrator Password") `
-    -DomainAdministratorCred (Get-Credential -UserName thomas.se\administrator -Message "Enter Domain Administrator Credential") `
-    -ADUserCred (Get-Credential -UserName Test.User -Message "Enter AD User Credential")
+$PW = ConvertTo-SecureString -String "ABC.123/abc.123" -AsPlainText -Force
 
+SkapaDC -ConfigurationData $configurationdata `
+    -SafemodeAdministratorCred (New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList "administrator", $PW) `
+    -DomainAdministratorCred (New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList "supercow.se\administrator", $PW) `
+    -ADUserCred (New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList "supercow\test.user", $PW) -OutputPath "$env:temp\SkapaDC"
+    
 # Make sure that LCM is set to continue configuration after reboot.
-Set-DSCLocalConfigurationManager -Path .\HADC –Verbose -Credential s1\administrator
+<#
 
-Start-DscConfiguration -Path ".\HADC" -Wait -Verbose -force -Credential administrator
+Set-DSCLocalConfigurationManager -Path "$env:temp\SkapaDC" -Credential administrator -Force -verbose
+Start-DscConfiguration -Path "$env:temp\SkapaDC" -Wait -Verbose -force -Credential administrator 
+
+#>

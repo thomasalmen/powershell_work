@@ -1,0 +1,209 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<unattend xmlns="urn:schemas-microsoft-com:unattend">
+  <settings pass="windowsPE">
+  <component name="Microsoft-Windows-International-Core-WinPE" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State Jump " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance Jump ">
+  <SetupUILanguage>
+    <UILanguage>en-US</UILanguage>    
+  </SetupUILanguage>
+  <InputLocale>sv-SE</InputLocale>
+  <SystemLocale>sv-SE</SystemLocale>
+  <UILanguage>en-US</UILanguage>
+  <UILanguageFallback>en-US</UILanguageFallback>
+  <UserLocale>sv-SE</UserLocale>
+  </component>
+
+  <component name="Microsoft-Windows-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State Jump " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance Jump ">
+  <UserData>
+  <AcceptEula>true</AcceptEula>
+  <FullName>1AdminAccount</FullName>
+  <Organization>1Organization</Organization>
+  </UserData>
+  <EnableFirewall>true</EnableFirewall>
+  <EnableNetwork>true</EnableNetwork>
+  </component>
+  </settings>
+  <settings pass="offlineServicing">
+  <component name="Microsoft-Windows-LUA-Settings" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State Jump " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance Jump ">
+  <EnableLUA>true</EnableLUA>
+  </component>
+
+  </settings>
+  <settings pass="generalize">
+  <component name="Microsoft-Windows-Security-SPP" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State Jump " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance Jump ">
+  <SkipRearm>1</SkipRearm>
+  </component>
+  </settings>
+  <settings pass="specialize">
+  <component name="Microsoft-Windows-International-Core" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State Jump " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance Jump ">
+  <InputLocale>sv-SE</InputLocale>
+  <SystemLocale>sv-SE</SystemLocale>
+  <UILanguage>en-US</UILanguage>
+  <UILanguageFallback>sv-SE</UILanguageFallback>
+  <UserLocale>sv-SE</UserLocale>
+  </component>
+
+  <component name="Microsoft-Windows-Security-SPP-UX" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State Jump " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance Jump ">
+  <SkipAutoActivation>true</SkipAutoActivation>
+  </component>
+  <component name="Microsoft-Windows-SQMApi" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State Jump " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance Jump ">
+  <CEIPEnabled>0</CEIPEnabled>
+   </component>
+  <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State Jump " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance Jump ">
+  <ComputerName>1Name</ComputerName>
+  <ProductKey>1ProductID</ProductKey>
+  </component>
+
+  
+  
+  <component name="Microsoft-Windows-TCPIP" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+   <Interfaces>
+   <!-- Add static IP address (192.168.0.1/24, ffff:1::3/48) & route (12.34.0.0/16) to interface with identifier "Ethernet 1" --> 
+   <Interface wcm:action="add">
+         <Ipv4Settings>
+            <DhcpEnabled>false</DhcpEnabled>
+            <Metric>10</Metric>
+            <RouterDiscoveryEnabled>false</RouterDiscoveryEnabled>
+         </Ipv4Settings>
+		 <!--
+         <Ipv6Settings>
+            <DhcpEnabled>false</DhcpEnabled>
+            <Metric>30</Metric>
+            <RouterDiscoveryEnabled>true</RouterDiscoveryEnabled>
+         </Ipv6Settings>
+		 -->
+      <Identifier>1MacAddressDomain</Identifier>
+         <UnicastIpAddresses>
+           <IpAddress wcm:action="add" wcm:keyValue="1">1IPDomain/24</IpAddress>
+           <!--<IpAddress wcm:action="add" wcm:keyValue="2">ffff:1::3/48</IpAddress>-->
+         </UnicastIpAddresses>
+         <Routes>
+            <Route wcm:action="add">
+               <Identifier>1</Identifier>
+               <Metric>10</Metric>
+               <NextHopAddress>1DefaultGW</NextHopAddress>
+               <Prefix>24</Prefix>
+            </Route>
+			<!--
+            <Route wcm:action="add">
+               <Identifier>10</Identifier>
+               <Metric>29</Metric>
+               <NextHopAddress>12.34.56.0</NextHopAddress>
+               <Prefix>24</Prefix>
+            </Route>
+			-->
+         </Routes>
+      </Interface>
+	  <!--
+      <Interface wcm:action="add">
+         <Ipv4Settings>
+            <DhcpEnabled>true</DhcpEnabled>
+            <Metric>20</Metric>
+            <RouterDiscoveryEnabled>false</RouterDiscoveryEnabled>
+         </Ipv4Settings>
+         <Ipv6Settings>
+            <DhcpEnabled>false</DhcpEnabled>
+            <Metric>10</Metric>
+            <RouterDiscoveryEnabled>true</RouterDiscoveryEnabled>
+         </Ipv6Settings>
+         <Identifier>Local Area Connection</Identifier>
+         <UnicastIpAddresses>
+            <IpAddress wcm:action="add" wcm:keyValue="1">123.45.67.8</IpAddress>
+            </UnicastIpAddresses>
+         <Routes>
+            <Route wcm:action="add">
+               <Identifier>1</Identifier>
+               <Metric>10</Metric>
+               <NextHopAddress>12.34.0.0</NextHopAddress>
+               <Prefix>16</Prefix>
+            </Route>
+         </Routes>
+      </Interface>
+	 -->
+   </Interfaces>
+</component>
+
+  <!--
+  <component name="Microsoft-Windows-TCPIP" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State Jump " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance Jump ">
+  <Interfaces>
+  <Interface wcm:action="add">
+   <Identifier>1MacAddressDomain</Identifier>
+  <Ipv4Settings>
+  <DhcpEnabled>false</DhcpEnabled>
+  <Metric>10</Metric>
+  <RouterDiscoveryEnabled>false</RouterDiscoveryEnabled>
+  </Ipv4Settings>
+  <UnicastIpAddresses>
+  <IpAddress wcm:action="add" wcm:keyValue="1">1IPDomain/24</IpAddress>
+  </UnicastIpAddresses>
+  <Routes>
+  <Route wcm:action="add">
+  <Identifier>1</Identifier>
+  <Metric>10</Metric>
+  <NextHopAddress>1DefaultGW</NextHopAddress>
+  <Prefix>0.0.0.0/0</Prefix>
+  </Route>
+  </Routes>
+  </Interface>
+  </Interfaces>
+  </component>
+  -->
+
+  <component name="Microsoft-Windows-DNS-Client" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State Jump " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance Jump ">
+  <Interfaces>
+  <Interface wcm:action="add">
+   <DNSServerSearchOrder>
+  <IpAddress wcm:action="add" wcm:keyValue="1">1DNSServer</IpAddress>
+  </DNSServerSearchOrder>
+  <Identifier>1MACAddressDomain</Identifier>
+   <EnableAdapterDomainNameRegistration>true</EnableAdapterDomainNameRegistration>
+  <DisableDynamicUpdate>true</DisableDynamicUpdate>
+  <DNSDomain>1DNSDomain</DNSDomain>
+  </Interface>
+  </Interfaces>
+  <DNSDomain>1DNSDomain</DNSDomain>
+  <UseDomainNameDevolution>true</UseDomainNameDevolution>
+  </component>
+  </settings>
+  <settings pass="oobeSystem">
+  <component name="Microsoft-Windows-Shell-Setup" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="nonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State Jump " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance Jump ">
+  <OOBE>
+  <HideEULAPage>true</HideEULAPage>
+  <HideOEMRegistrationScreen>true</HideOEMRegistrationScreen>
+  <HideOnlineAccountScreens>true</HideOnlineAccountScreens>
+   <HideWirelessSetupInOOBE>true</HideWirelessSetupInOOBE>
+  <NetworkLocation>Work</NetworkLocation>
+  <ProtectYourPC>1</ProtectYourPC>
+  <SkipUserOOBE>true</SkipUserOOBE>
+  <SkipMachineOOBE>true</SkipMachineOOBE>
+  </OOBE>
+  <UserAccounts>
+  <LocalAccounts>
+  <LocalAccount wcm:action="add">
+  <Password>
+  <Value>1AdminPassword</Value>
+   <PlainText>True</PlainText>
+  </Password>
+  <Description></Description>
+  <DisplayName>1AdminAccount</DisplayName>
+  <Group>Administrators</Group>
+   <Name>1AdminAccount</Name>
+  </LocalAccount>
+  </LocalAccounts>
+  </UserAccounts>
+  <RegisteredOrganization>1Organization</RegisteredOrganization>
+  <RegisteredOwner>1Organization</RegisteredOwner>
+  <DisableAutoDaylightTimeSet>false</DisableAutoDaylightTimeSet>
+  <TimeZone>UTC+01:00</TimeZone>
+  <VisualEffects>
+  <SystemDefaultBackgroundColor>2</SystemDefaultBackgroundColor>
+  </VisualEffects>
+  </component>
+  <component name="Microsoft-Windows-ehome-reg-inf" processorArchitecture="x86" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="NonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State Jump " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance Jump ">
+  <RestartEnabled>true</RestartEnabled>
+  </component>
+  <component name="Microsoft-Windows-ehome-reg-inf" processorArchitecture="amd64" publicKeyToken="31bf3856ad364e35" language="neutral" versionScope="NonSxS" xmlns:wcm="http://schemas.microsoft.com/WMIConfig/2002/State Jump " xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance Jump ">
+  <RestartEnabled>true</RestartEnabled>
+    </component>
+  </settings>
+  <cpi:offlineImage cpi:source="wim:c:/server2016/sources/install.wim#Windows Server 2016 SERVERDATACENTERCORE" xmlns:cpi="urn:schemas-microsoft-com:cpi" />
+</unattend>
