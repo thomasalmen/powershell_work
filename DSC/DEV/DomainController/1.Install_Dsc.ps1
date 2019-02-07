@@ -1,4 +1,4 @@
-﻿<#
+﻿  <#
 
 #Om servern inte har internet (ex hyper-v internal) så måste modulen sparas lokalt och sen kopieras till servern.
 $requiredDSCModules=@("xActiveDirectory","NuGet")
@@ -16,7 +16,7 @@ $creds = get-credential administrator
     })
 }
 #>
-# Om allt misslyckas så går det att avinstallera DCn: Uninstall-ADDSDomainController -IgnoreLastDCInDomainMismatch -Force -IgnoreLastDnsServerForZone -RemoveApplicationPartitions
+# Om allt misslyckas så går det eventuellt att avinstallera DCn: Uninstall-ADDSDomainController -IgnoreLastDCInDomainMismatch -Force -IgnoreLastDnsServerForZone -RemoveApplicationPartitions
 
 # Configuration data file (ConfigurationData.psd1).
 
@@ -27,7 +27,7 @@ $configurationdata=@{
             # NodeName "*" = apply this properties to all nodes that are members of AllNodes array.
             Nodename = "*"
 
-            # Name of the remote domain. If no parent name is specified, this is the fully qualified domain name for the first domain in the forest.
+            # Domännamn
             DomainName = "supercow.se"
 
             # Maximum number of retries to check for the domain's existence.
@@ -37,15 +37,46 @@ $configurationdata=@{
             RetryIntervalSec = 30
 
             # The path to the .cer file containing the public key of the Encryption Certificate used to encrypt credentials for this node.
-            CertificateFile = "$env:TEMP\DscPublicKey.cer"
+            CertificateFile = "$(get-location)\DscPublicKey.cer"
 
             # The thumbprint of the Encryption Certificate used to decrypt the credentials on target node.
-            Thumbprint = "A6C4D4CB47D7430FDC01F262A995F8FDA76E0D4B"
+            Thumbprint = "EEE0629D3F72666C93D1367FDFF9F3BF0913B638"
+        
         },
 
         @{
-            Nodename = "DC"
+            Nodename = "thomasdc"
             Role = "DC01"
+            #Skapa vanlig user
+            ADUserName = "testuser"
+            #ADUserPassword = 
+
+            #Variabler för skapandet av test-adgrupp (under users)
+            ADGroupName = "TestGrupp"   
+            ADGroupScope = "Global" #('DomainLocal','Global','Universal')]   
+            ADGroupCatgory = "Security" #('Security','Distribution')]   
+            ADGroupDescription = "Beskrivning av gruppen"
+
+            #Variabler för OU 
+            OUName = "Exempel OU"  
+            OUPath = "dc=supercow,dc=se" 
+            OUProtectedFromAccidentalDeletion = $true  
+            OUDescription = "Ett test OU"
+
+            #Variabler för passwordpolicy 
+            PWPolicyComplexityEnabled = $true 
+            PWPolicyMinPasswordLength = 8
+
+            #Variabler för att skapa datorkonto 
+            CreateComputerAccount_DomainController = $Node.NodeName  
+            CreateComputerAccount_DomainAdministratorCredential = $DomainAdministratorCred  
+            CreateComputerAccount_ComputerName = "S1","S2"
+            CreateComputerAccount_Path = "dc=supercow,dc=se"
+
+        },
+        @{
+            Nodename = "<DC_NUMMER_TVÅ>"
+            Role = "Replica DC"
         }
     )
 }
@@ -61,8 +92,11 @@ Configuration SkapaDC
         [Parameter(Mandatory)] 
         [pscredential]$DomainAdministratorCred, 
 
+        [Parameter(Mandatory)]
+        [pscredential]$DNSDelegationCred,
+
         [Parameter(Mandatory)] 
-        [pscredential]$ADUserCred
+        [pscredential]$ADUserPassword
     )
 
     # Import DSC Resources
@@ -71,6 +105,9 @@ Configuration SkapaDC
 
     Node $AllNodes.Where{$_.Role -eq "DC01"}.Nodename
     {
+        #
+        # LCM
+        # 
         LocalConfigurationManager
         {
             # Går att ha satt till $true men enbart för testmiljö
@@ -81,83 +118,162 @@ Configuration SkapaDC
             CertificateId = $node.Thumbprint
         }
 
-        # Install Windows Feature "Active Directory Domain Services".
+        #
+        # Installera Windows Feature "Active Directory Domain Services".
+        #
         WindowsFeature ADDSInstall
         {
             Ensure = "Present"
             Name   = "AD-Domain-Services"
         }
+
+        #
+        # Installera RSAT - för guiadmin
+        #
         WindowsFeature InstallTools
         {
             name = "RSAT-ADDS"
             ensure='Present'
         }
-        # Create AD Domain specified in HADCServerConfigData.
+
+        #
+        # Skapa AD-domänen som specifierat i configurationdata
+        #
         xADDomain FirstDC
         {
-            # Name of the remote domain. If no parent name is specified, this is the fully qualified domain name for the first domain in the forest.
-            DomainName                    = $Node.DomainName
-            # Credentials used to query for domain existence.
+            DomainName = $Node.DomainName
             DomainAdministratorCredential = $DomainAdministratorCred
-            # Password for the administrator account when the computer is started in Safe Mode.
             SafemodeAdministratorPassword = $SafemodeAdministratorCred
-            # Specifies the fully qualified, non-Universal Naming Convention (UNC) path to a directory on a fixed disk of the local computer that contains the domain database (optional).
-            DatabasePath                  = "C:\NTDS"
-            # Specifies the fully qualified, non-UNC path to a directory on a fixed disk of the local computer where the log file for this operation will be written (optional).
-            LogPath                       = "C:\NTDS"
-            # Specifies the fully qualified, non-UNC path to a directory on a fixed disk of the local computer where the Sysvol file will be written. (optional)
-            SysvolPath                    = "C:\SYSVOL"
-            # DependsOn specifies which resources depend on other resources, and the LCM ensures that they are applied in the correct order, regardless of the order in which resource instances are defined.
-            DependsOn                     = "[WindowsFeature]ADDSInstall"
+            #DnsDelegationCredential = $DNSDelegationCred
+            DependsOn = "[WindowsFeature]ADDSInstall"
         }
 
-        # Wait until AD Domain is created.
+        #
+        # Vänta tills domänen skapats
+        #
         xWaitForADDomain DomainWait
         {
-            DomainName           = $Node.DomainName
-            DomainUserCredential = $DomainAdministratorCred
-            # Maximum number of retries to check for the domain's existence.
-            RetryCount           = $Node.RetryCount
-            # Interval to check for the domain's existence.
-            RetryIntervalSec     = $Node.RetryIntervalSec
-            DependsOn            = "[xADDomain]FirstDC"
+            DomainName = $Node.DomainName
+            DomainUserCredential = $domainCred
+            RetryCount = $Node.RetryCount
+            RetryIntervalSec = $Node.RetryIntervalSec
+            DependsOn = "[xADDomain]FirstDC"
         }
 
-        # Enable Recycle Bin.
+        #
+        # Enabla Recycle Bin.
+        #
         xADRecycleBin RecycleBin
         {
             # Credential with Enterprise Administrator rights to the forest.
             EnterpriseAdministratorCredential = $DomainAdministratorCred
             # Fully qualified domain name of forest to enable Active Directory Recycle Bin.
-            ForestFQDN                        = $Node.DomainName
-            DependsOn                         = "[xWaitForADDomain]DomainWait"
+            ForestFQDN = $Node.DomainName
+            DependsOn = "[xWaitForADDomain]DomainWait"
         }
         
-        # Create AD User "Test.User".
-        xADUser ADUser
+        #
+        # Skapa AD User "TestUser".
+        #
+        xADUser SkapaUser
         {
-            DomainName                    = $Node.DomainName
-            UserName                      = "Test.User"
+            DomainName = $Node.DomainName
+            DomainAdministratorCredential = $domainCred
+            UserName = $Node.ADUserName
+            Password = $ADUserPassword
+            Ensure = "Present"
+            DependsOn = "[xWaitForADDomain]DomainWait"
+        }
+
+        #
+        #Skapa exempelgrupp
+        #
+        xADGroup ExampleGroup
+        {
+            GroupName = $Node.ADGroupName
+            GroupScope = $Node.ADGroupScope
+            Category = $Node.ADGroupCatgory
+            Description = $Node.ADGroupDescription
             Ensure = 'Present'
-            Password                      = $ADUserCred
-            #DomainAdministratorCredential = $DomainAdministratorCred
-            #DependsOn                     = "[xWaitForADDomain]DomainWait"
+        }
+
+        #
+        #Skapa test-ou
+        #
+        xADOrganizationalUnit ExampleOU 
+        {
+            Name = $Node.OUName      
+            Path = $Node.OUPath   
+            ProtectedFromAccidentalDeletion = $Node.OUProtectedFromAccidentalDeletion   
+            Description = $Node.OUDescription
+            Ensure = 'Present'
+        }
+
+        #
+        #Password policy  
+        #
+        xADDomainDefaultPasswordPolicy 'DefaultPasswordPolicy'     
+        {
+            DomainName = $Node.DomainName       
+            ComplexityEnabled = $Node.PWPolicyComplexityEnabled   
+            MinPasswordLength = $Node.PWPolicyMinPasswordLength       
+        }
+           
+        #                                                     
+        #Skapa datorkonto
+        #
+        $Node.CreateComputerAccount_ComputerName | % {
+            xADComputer "$_"      
+            {        
+                DomainController = $Node.CreateComputerAccount_DomainController      
+                DomainAdministratorCredential = $Node.CreateComputerAccount_DomainAdministratorCredential 
+                ComputerName = $_ # $Node.CreateComputerAccount_ComputerName         
+                Path = $Path  
+            }  
         }
     }
+    <#
+    Node $AllNodes.Where{$_.Role -eq "Replica DC"}.Nodename
+    {
+        WindowsFeature ADDSInstall
+        {
+            Ensure = "Present"
+            Name = "AD-Domain-Services"
+        }
+        xWaitForADDomain DscForestWait
+        {
+            DomainName = $Node.DomainName
+            DomainUserCredential = $domainCred
+            RetryCount = $Node.RetryCount
+            RetryIntervalSec = $Node.RetryIntervalSec
+            DependsOn = "[WindowsFeature]ADDSInstall"
+        }
+        xADDomainController SecondDC
+        {
+            DomainName = $Node.DomainName
+            DomainAdministratorCredential = $domainCred
+            SafemodeAdministratorPassword = $safemodeAdministratorCred
+            DnsDelegationCredential = $DNSDelegationCred
+            DependsOn = "[xWaitForADDomain]DscForestWait"
+        }
+    }
+    #>
 }
-
-#Testlösen: ABC.123/abc.123
-$PW = ConvertTo-SecureString -String "ABC.123/abc.123" -AsPlainText -Force
+$PW = ConvertTo-SecureString -String "Password1!" -AsPlainText -Force
 
 SkapaDC -ConfigurationData $configurationdata `
     -SafemodeAdministratorCred (New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList "administrator", $PW) `
-    -DomainAdministratorCred (New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList "supercow.se\administrator", $PW) `
-    -ADUserCred (New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList "supercow\test.user", $PW) -OutputPath "$env:temp\SkapaDC"
-    
-# Make sure that LCM is set to continue configuration after reboot.
-<#
+    -DomainAdministratorCred (New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList "administrator", $PW) `
+    -DNSDelegationCred (New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList "administrator", $PW) `    -ADUserPassword (New-Object -TypeName "System.Management.Automation.PSCredential" -ArgumentList "testuser", $PW) `
+    -OutputPath "$(get-location)\SkapaDC"
 
-Set-DSCLocalConfigurationManager -Path "$env:temp\SkapaDC" -Credential administrator -Force -verbose
-Start-DscConfiguration -Path "$env:temp\SkapaDC" -Wait -Verbose -force -Credential administrator 
+# LCM Först
+# Set-DSCLocalConfigurationManager -Path "$(get-location)\SkapaDC" -Credential administrator -Force -verbose
 
+#Starta DSC
+# Start-DscConfiguration -Path "$(get-location)\SkapaDC" -Wait -Verbose -force -Credential administrator 
+
+#remove-dscconfigurationdocument -Stage Current
 #>
+ 
+ 

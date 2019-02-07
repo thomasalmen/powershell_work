@@ -39,18 +39,18 @@ $Cert = Get-ChildItem -Path cert:\LocalMachine\My | Where-Object {
 
 # export the public key certificate
 $mypwd = ConvertTo-SecureString -String $pfxpassword -Force -AsPlainText
-$cert | Export-PfxCertificate -FilePath "$env:temp\DscPrivateKey.pfx" -Password $mypwd -Force
+$cert | Export-PfxCertificate -FilePath "$(get-location)\DscPrivateKey.pfx" -Password $mypwd -Force
 
 # remove the private key certificate from the node but keep the public key certificate
-$cert | Export-Certificate -FilePath "$env:temp\DscPublicKey.cer" -Force
+$cert | Export-Certificate -FilePath "$(get-location)\DscPublicKey.cer" -Force
 $cert | Remove-Item -Force
-Import-Certificate -FilePath "$env:temp\DscPublicKey.cer" -CertStoreLocation Cert:\LocalMachine\My
+Import-Certificate -FilePath "$(get-location)\DscPublicKey.cer" -CertStoreLocation Cert:\LocalMachine\My
 
 
 # Kopiera cert och nyckel remote via pssession:
 $computers | % {
     $sess = New-PSSession -ComputerName $_ -Credential (Get-Credential -Message "Lösen för $_" -UserName administrator)
-    Copy-Item "$env:temp\DscPrivateKey.pfx" -Destination "c:\windows\temp\DscPrivateKey.pfx" -ToSession $sess -Force
+    Copy-Item "$(get-location)\DscPrivateKey.pfx" -Destination "c:\windows\temp\DscPrivateKey.pfx" -ToSession $sess -Force
 
     # Import to the root store so that it is trusted
     $mypwd = ConvertTo-SecureString -String $pfxpassword -Force -AsPlainText
