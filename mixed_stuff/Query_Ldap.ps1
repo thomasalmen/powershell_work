@@ -31,7 +31,7 @@ $kollprops = @{
 #$computers = "kollmaster","kollslave1"
 #$ldapobjekt = "/C=SE"
 #$sokfilter="sn=almén"
-#$sokfilter="mail=thomas.almen@regionorebrolan.se"
+#$sokfilter="mail=homer.simpson@xxx.se"
 #$propertyToLookfor = "hsaidentity"
 
 
