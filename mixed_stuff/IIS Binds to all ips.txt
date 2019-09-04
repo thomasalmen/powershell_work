@@ -1,0 +1,3 @@
+https://blogs.msdn.microsoft.com/asiatech/2017/02/15/iis-8-5-binds-to-all-ip-addresses-on-a-server/
+
+https://support.microsoft.com/en-us/help/954874/iis-binds-to-all-ip-addresses-on-a-server-when-you-install-iis-7-0-on?ranMID=43674&ranEAID=je6NUbpObpQ&ranSiteID=je6NUbpObpQ-5x_GpFNhOIYWZwjPF1s21A&epi=je6NUbpObpQ-5x_GpFNhOIYWZwjPF1s21A&irgwc=1&OCID=AID681541_aff_7795_1243925&tduid=(ir__m1qy6fpaakkfr2ta0er6am96sn2xmxllji0bnwcm00)(7795)(1243925)(je6NUbpObpQ-5x_GpFNhOIYWZwjPF1s21A)()&irclickid=_m1qy6fpaakkfr2ta0er6am96sn2xmxllji0bnwcm00
