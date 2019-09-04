@@ -1,4 +1,4 @@
-﻿# Förberedelse för att skapa och ladda upp ett self-signed cert för att kryptera mof-filerna.
+# Förberedelse för att skapa och ladda upp ett self-signed cert för att kryptera mof-filerna.
 # Self-signed givetvis bara i testmiljöer
 # Scriptet skapar ett self-signed cert på lokala datorn och laddar upp det till respektive klientdator.
 # Använder New-SelfSignedCertificateEx.ps1
@@ -11,10 +11,10 @@
 # cd C:\Users\thalm\OneDrive\powershell_work\dsc\DomainController
 
 # Sourca New-SelfSignedCertificateEx.ps1
-#. .\New-SelfSignedCertificateEx.ps1
+#. .\NewSelfSignedCert.ps1
 
 # Alla datorer som ska ha certet
-$computers="thomasdc"
+$computers="dc" #"s1","s2"
 # Lösenord till pfx'en
 $pfxpassword= "P@ssw0rd"
 
@@ -61,3 +61,4 @@ $computers | % {
 $thumbprint.Thumbprint
 $thumbprint.Thumbprint | clip
 write-output "Thumbprint kopierat till clipboard. Du kan nu klistra in den i din DSC ConfigurationData"
+
