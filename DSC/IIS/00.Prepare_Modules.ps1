@@ -1,23 +1,16 @@
-<#
-
-    Tankar ner och installerar moduler som behövs till DSC-Konfen
-    Laddar först ner och installerar dem lokalt.
-    Kopierar sen till respektive maskin och importerar dem där.
-
-#>
 
 $creds = get-credential administrator
 $VerbosePreference="Silentlycontinue"
 
-$computers="S1","S2"
+$computers="NAMN" #,"S2"
 $requiredDSCModules=@(
     @{"ModuleName" = "xWebAdministration";"Version"=""}
     @{"ModuleName" = "NetworkingDsc";"Version"=""}
+    @{"ModuleName" = "ActiveDirectoryCSDsc";"Version"=""} 
 )
 $requiredDSCModules.ForEach({
-    $localmodule = Find-Module -repository psgallery $($_.ModuleName)
-    $localmodule | install-module #Installerar modulen lokalt
-    $localmodule | Save-Module $($_.ModuleName) -Path $env:temp\DSC_IIS_Modules\ -Force
+    $localmodule = Find-Module -repository psgallery $($_.ModuleName) | install-module #Letar inline och Installerar modulen lokalt
+    #$localmodule | Save-Module $($_.ModuleName) -Path $env:temp\DSC_IIS_Modules\ -Force
 })
 
 $requiredPackageManagers=@(
@@ -42,3 +35,4 @@ $computers.ForEach({
     invoke-command -session $sess { Import-PackageProvider -Name $($using:nugetinstall.name) -Force}
     remove-pssession $sess
 })
+
