@@ -17,7 +17,7 @@ break
 
 
 $computer = "kraschobang"
-$creds=Get-Credential orebroll\tal008adm
+$creds=Get-Credential domain\username
 
 $s=New-PSSession $computer -Credential $creds
 
@@ -41,17 +41,17 @@ Enter-PSSession $s
 
 <# Modifiera dessa #>
 # POOL
-$AppPoolnamn = "befinfomedixservice.orebroll.se"
+$AppPoolnamn = "poolname.xxx.se"
 $AppPoolNetVersion = "v4.0"
 
 #SAJT
-$SajtNamn = "befinfomedixservice.orebroll.se"
+$SajtNamn = "sitename.xxx.se"
 $SajtProtokoll = "http"
 $SajtBinding = ""
 $SajtIp = ""
 $SajtPort = 80
-$SajtPath = "d:\websites\befinfomedixservice.orebroll.se\CurrentVersion"
-$SajtHostHeader = "befinfomedixservice.orebroll.se"
+$SajtPath = "d:\websites\sitename.xxx.se\CurrentVersion"
+$SajtHostHeader = "sitename.xxx.se"
 
 #CERTIFIKAT
 #Använd maskinens cert - Export-PfxCertificate 
