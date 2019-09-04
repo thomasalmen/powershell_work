@@ -1,11 +1,13 @@
-﻿if($PSVersionTable.PSVersion.Major -lt 5 ){Write-Host "Detta script kräver Powershell version 5 eller senare!"}
+#UNDER development
+
+if($PSVersionTable.PSVersion.Major -lt 5 ){Write-Host "Detta script kräver Powershell version 5 eller senare!"}
 
 cls
 $portsToTestForCertificates=@(22,443,8443)
 
 $system=[ordered]@{
 
-    "www.regionorebrolan.se" = [ordered]@{
+    "www.xxx.se" = [ordered]@{
 
         #"DEAD_WebServices" = [ordered]@{
         #    "DEAD" = @(1433)
@@ -13,18 +15,14 @@ $system=[ordered]@{
 
 
         "WebServers" = [ordered]@{
-            "www.orebroll.se" = @(80,443)
-            "www.ojebjoll.se" = @(80,443)
-        #    "www.regionorebrolan.se" = @(80,443)
-            "webext01a" = @(80,808)
-        #    "webext01b" = @(80,808)
-        #    "www-noda.orebroll.se" = @(80,443)
-        #    "www-nodb.orebroll.se" = @(80,443)
-        #    "filin.orebroll.se" = @(21,22)
+            "www.xxx.se" = @(80,443)
+            "www.yyy.se" = @(80,443)
+            "srv01" = @(80,808)
+            "srv02" = @(80,808)
         };
 
         #"Databases" = [ordered]@{
-        #    "HOMER" = @(1433,3389)
+        #    "sql01" = @(1433,3389)
         #};
 
         #"WebServices" = [ordered]@{
@@ -177,7 +175,7 @@ param(
         $TcpClient = new-object "System.Net.Sockets.TcpClient" -ErrorAction Stop -ErrorVariable e
         try 
         {
-            $TcpClient.Connect( "www.regionorebrolan.se", 443)
+            $TcpClient.Connect( "www.xxx.se", 443)
             if($TcpClient.Connected -eq $true)
             {
                 write-host "TcpConnect --> $($servernamn):$($port) `t[OK]"
