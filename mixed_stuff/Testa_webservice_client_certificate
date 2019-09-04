@@ -1,11 +1,12 @@
 ﻿cls
 
-#$klientcertifikatCN="ncsprod-hsaws.orebroll.se"
-$klientcertifikatCN="hsaws.user.katalogtjanst.orebroll.se"
+#$klientcertifikatCN="prodcert.xxx.se"
+$klientcertifikatCN="testcert.xxx.se"
 $certpath = "cert:\CurrentUser\My"
 
 $uri = @(
-"https://hsaws.orebroll.se/hsaws/hsaws/""https://hsaws1.orebroll.se:8443/hsaws/hsaws/"
+"https://hsaws.orebroll.se/hsaws/hsaws/"
+"https://hsaws1.orebroll.se:8443/hsaws/hsaws/"
 "https://hsaws2.orebroll.se:8443/hsaws/hsaws/"
 "https://hsawsnettest.orebroll.se/HsaWs.svc"
 )
