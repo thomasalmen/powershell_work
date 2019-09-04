@@ -1,7 +1,8 @@
 ﻿cls
 
 [string]$url = @(
-"http://befservice2.orebroll.se")
+"http://befservice2.orebroll.se"
+)
 
 $requestHeaders = @{"SOAPAction" = "http://befservice2.org/GetPerson"; "Accept-Charset" ="utf-8";"Accept-Encoding" = "gzip,deflate"}
 $contenttype="text/xml;charset=UTF-8"
