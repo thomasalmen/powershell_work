@@ -1,25 +1,25 @@
-﻿cls
+cls
 
 $kollprops = @{
 
     "Prod" = [ordered]@{
-        Computers=@("Kollmaster","kollslave1","kollslave2")
+        Computers=@("ldapserver1","ldapserver2","ldapserver3")
         ldapObject="/C=SE"
-        SokFilter="mail=thomas.almen@regionorebrolan.se"
+        SokFilter="mail=homer.simpson@xxx.se"
         propertyToLookfor = "hsaidentity"
     };
 
     #"Test" = [ordered]@{
-    #    Computers=@("Kollmastertest1","kollmastertest2","kollslavetest1","kollslavetest2")
+    #    Computers=@("ldapservertest1","ldapservertest2","ldapservertest3","ldapservertest4")
     #    ldapObject="/C=SE"
-    #    SokFilter="mail=thomas.almen@regionorebrolan.se"
+    #    SokFilter="mail=homer.simpson@xxx.se"
     #    propertyToLookfor = "hsaidentity"
     #};
 
     "History" = [ordered]@{
-        Computers=@("kollhist")
+        Computers=@("ldapservertest5")
         ldapObject="/o=EDIRAroot"
-        SokFilter="sn=kollmonitor_user"
+        SokFilter="sn=some_username"
         propertyToLookfor = "description"
     };
 }
@@ -38,7 +38,7 @@ $kollprops = @{
 <# 
     Remember:
     Sök på ett attribut som inte returnerar för många träffar
-    Ex "sn=andersson" returnerar massor av träffar, medans "mail=thomas.almen@regionorebrolan.se" inte alls returnerar lika många
+    Ex "sn=andersson" returnerar massor av träffar, medans "mail=homer.simpson@xxx.se" inte alls returnerar lika många
 #>
 <#
 allows you to provide an array of keys to get multiple values.
