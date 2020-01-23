@@ -1,4 +1,4 @@
-﻿New-ADUser -Name "F5-DELEGATION" -UserPrincipalName F5-SSO@scb.intra -SamAccountName "F5-DELEGATION" -PasswordNeverExpires $true -Enabled $true -AccountPassword (ConvertTo-SecureString -AsPlainText "P@ssw0rd" -Force) 
+﻿New-ADUser -Name "F5-DELEGATION" -UserPrincipalName F5-SSO@supercow.se -SamAccountName "F5-DELEGATION" -PasswordNeverExpires $true -Enabled $true -AccountPassword (ConvertTo-SecureString -AsPlainText "P@ssw0rd" -Force) 
 
 #Fixa SPN 
 Set-AdUser -Identity F5-SSO -ServicePrincipalNames @{Add="host/F5-DELEGATIONHOST.supercow.se"}
