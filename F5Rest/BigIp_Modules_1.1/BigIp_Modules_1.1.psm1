@@ -65,6 +65,9 @@ $ScriptPath = Split-Path $MyInvocation.MyCommand.Path
 
 #endregion
 
+Export-ModuleMember -Function Add-Irule, Clear-WebCache,Disable-Poolmember, Get-FailoverState, Get-Irule, Get-Otp, Get-Partition, Get-Token, Get-Vip, Get-VipCount, New-Backup, New-Csr, New-Irule, New-Sorrypage,New-Transaction,Patch-Irule,Remove-IRuleFromPartition, Remove-Sorrypage,Set-Sorrypage,Test-WebSites
+
+
 <#
 $manifest = @{
 
