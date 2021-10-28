@@ -57,13 +57,12 @@ function New-Csr {
         try 
         {
             Set-LogMessage "Skickar CSR till '$LTMName'..." -Type Info
-            [SSLValidator]::OverrideValidation()
-            $Result = Invoke-RestMethod -Method POST -Uri "https://$LTMName$RestUri" -Body $JSONBody -WebSession $F5session.websession -ContentType 'application/json' -ErrorAction Stop
-            [SSLValidator]::RestoreValidation()
+            #[SSLValidator]::OverrideValidation()
+            #$Result = Invoke-F5RestMethod -Method POST -Uri "https://$LTMName$RestUri" -Body $JSONBody -f
+            $Result = Invoke-F5RestMethod -Method POST -Uri "https://$LTMName$RestUri" -Body $JSONBody -F5Session $F5session.websession
+            #[SSLValidator]::RestoreValidation()
             
             Set-LogMessage "New CSR created OK"
-            #Write-QALogMessage -Message $okMessage -Source "Catch-block in get-token" -TYPE INFO
-            #Write-verbose $okMessage -Verbose
 
                 try 
                 {
@@ -90,9 +89,10 @@ function New-Csr {
                     }
 
   
-                    [SSLValidator]::OverrideValidation()
-                    $Result = Invoke-RestMethod -Method POST -Uri "https://$LTMName$RestUri" -Body $JSONBody -WebSession $F5session.websession -ContentType 'application/json' -ErrorAction Stop
-                    [SSLValidator]::RestoreValidation()
+                    #[SSLValidator]::OverrideValidation()
+                    #$Result = Invoke-RestMethod -Method POST -Uri "https://$LTMName$RestUri" -Body $JSONBody -WebSession $F5session.websession -ContentType 'application/json' -ErrorAction Stop
+                     $Result = Invoke-F5RestMethod -Method POST -Uri "https://$LTMName$RestUri" -Body $JSONBody -F5Session $F5session.websession
+                    #[SSLValidator]::RestoreValidation()
                     $CSR = $result.commandResult.Substring(0, $result.commandResult.IndexOf('-----END CERTIFICATE REQUEST-----') +32)
                     $CSR | Set-Clipboard
                     $CSR

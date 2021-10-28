@@ -1,3 +1,5 @@
+
+
 #region clear-webcache
 function Clear-WebCache {
 
@@ -5,7 +7,8 @@ function Clear-WebCache {
         
         # Case-sensitive namn på partition där den virtuella servern finns
         [Parameter(Mandatory=$true)]
-        [string]$partition,
+        [ValidateSet("yDMZ", "Common", "SCB-LAN", "iDMZ")]
+        $Partition,
 
         #Namn på webaccelerations-profilen
         [Parameter(Mandatory=$true)]

@@ -1,4 +1,4 @@
-function patch_irule {
+﻿function Patch-Irule {
 Write-Output "Funktion ej klar!"
 break
 

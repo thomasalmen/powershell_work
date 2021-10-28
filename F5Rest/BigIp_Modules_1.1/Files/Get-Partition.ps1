@@ -1,4 +1,4 @@
-function get-partition {
+function Get-Partition {
     
     [cmdletbinding()]
     [CmdletBinding(SupportsShouldProcess)] #adds WhatIf and Confirm parameters

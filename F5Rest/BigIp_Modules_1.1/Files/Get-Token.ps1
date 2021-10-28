@@ -1,5 +1,5 @@
 
-function get-token {
+function Get-Token {
 
    [cmdletBinding()]
     [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSUseShouldProcessForStateChangingFunctions", "")]

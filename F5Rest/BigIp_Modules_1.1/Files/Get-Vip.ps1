@@ -1,4 +1,4 @@
-function get-vip {
+function Get-Vip {
 
     [cmdletbinding()]
     [CmdletBinding(SupportsShouldProcess)] #adds WhatIf and Confirm parameters

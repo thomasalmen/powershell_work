@@ -1,8 +1,10 @@
-function remove-sorrypage 
+function Remove-Sorrypage 
 {
     [CmdletBinding()]
     Param(
-        [Parameter(Mandatory = $true)][string]$partition,
+        [Parameter(Mandatory=$true)]
+        [ValidateSet("yDMZ", "Common", "SCB-LAN", "iDMZ")]
+        $Partition,
         [Parameter(Mandatory = $true)][string]$vip,
         [Parameter(Mandatory = $true)][string]$iRulename,
         $F5session=$script:F5session

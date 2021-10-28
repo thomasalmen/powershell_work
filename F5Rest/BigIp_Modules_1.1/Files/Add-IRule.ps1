@@ -1,9 +1,21 @@
+<#
+.Synopsis
+   Lägger till iRule på vip
+   Funktionen måste anropas efter Get-Token då $F5Session skapats.
+   Alternativt måste en F5Session skickas med.
+
+.EXAMPLE
+
+#>
+
 function Add-Irule  {
 # Detta är en help-function och är inte gjord för att anropas direkt.
 
     param(
         # Partitionsnamn
-        [Parameter(Mandatory = $true)][string]$partition,
+        [Parameter(Mandatory=$true)]
+        [ValidateSet("yDMZ", "Common", "SCB-LAN", "iDMZ")]
+        $Partition,
         [Parameter(Mandatory = $true)][string]$vip,
         [Parameter(Mandatory = $true)][string]$iRulename,
 
