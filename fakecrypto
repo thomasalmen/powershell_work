@@ -113,14 +113,13 @@ Set-Wallpaper -filePath  $outputImagePath
 ## Dekoda base64-sträng
 $eicarBytes = [System.Convert]::FromBase64String($eicarString)
 $outputExePath = "$desktop\FakeVirus.exe"
-#[System.IO.File]::WriteAllBytes($outputExePath, $eicarBytes)
-
+[System.IO.File]::WriteAllBytes($outputExePath, $eicarBytes)
 [reflection.assembly]::loadwithpartialname("System.Windows.Forms") | out-null
 $path = Get-Process -id $pid | Select-Object -ExpandProperty Path
 $icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
 $notify = new-object system.windows.forms.notifyicon
 $notify.icon = $icon
 $notify.BalloonTipTitle="h@Cked bY dr Bombay"
-$notify.BalloonTipText="Your files are locked and you need to swich 50:- to +46709...."
+$notify.BalloonTipText="Your files are locked and you need to swish 50:- to +46709...."
 $notify.visible = $true
 $notify.showballoontip(60)
