@@ -1,6 +1,6 @@
 # Lite inställningar först
 $desktop="$env:USERPROFILE\Desktop"
-$paths = @("$desktop", "H:\") 
+$paths = @("$desktop") 
 $fileCount = 100  #Antalet störiga filer
 
 # Test-EICAR
@@ -114,12 +114,12 @@ Set-Wallpaper -filePath  $outputImagePath
 $eicarBytes = [System.Convert]::FromBase64String($eicarString)
 $outputExePath = "$desktop\FakeVirus.exe"
 [System.IO.File]::WriteAllBytes($outputExePath, $eicarBytes)
-[reflection.assembly]::loadwithpartialname("System.Windows.Forms") | out-null
-$path = Get-Process -id $pid | Select-Object -ExpandProperty Path
-$icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
-$notify = new-object system.windows.forms.notifyicon
-$notify.icon = $icon
-$notify.BalloonTipTitle="h@Cked bY dr Bombay"
-$notify.BalloonTipText="Your files are locked and you need to swish 50:- to +46709...."
-$notify.visible = $true
-$notify.showballoontip(1500)
+#[reflection.assembly]::loadwithpartialname("System.Windows.Forms") | out-null
+#$path = Get-Process -id $pid | Select-Object -ExpandProperty Path
+#$icon = [System.Drawing.Icon]::ExtractAssociatedIcon($path)
+#$notify = new-object system.windows.forms.notifyicon
+#$notify.icon = $icon
+#$notify.BalloonTipTitle="h@Cked bY dr Bombay"
+#$notify.BalloonTipText="Your files are locked and you need to swish 50:- to +46709...."
+#$notify.visible = $true
+#$notify.showballoontip(1500)
